@@ -1,1 +1,3 @@
+# do not put datasets in git
 data/geonames/
+data/gadm/
