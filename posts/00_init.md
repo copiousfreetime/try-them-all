@@ -8,8 +8,8 @@ We've recently made some changes at [dojo4](https://dojo4.com), one of which
 is to explicitly commit to working on things to improve dojo4. I've decided to
 spend my time working on this project and writing about it.
 
-The journey is the goal. I'm not looking to come to a arrive at a specific
-conclusion, just learn along the way and see what happens.
+The journey is the goal. I'm not looking to arrive at a specific conclusion,
+just learn along the way and see what happens.
 
 This will be done by implementing roughly the same web application in a
 variety of different approaches. I'll be using different application stacks for
