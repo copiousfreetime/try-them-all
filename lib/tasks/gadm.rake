@@ -14,12 +14,13 @@ end
 namespace :gadm do
 
   directory GadmInfo::DATA_DIR
-  file GadmInfo::DEST_ZIP => GadmInfo::DATA_DIR do
+  file GadmInfo::DEST_ZIP.to_s => GadmInfo::DATA_DIR do
     sh "curl -L #{GadmInfo::SRC_URL} -# -o #{GadmInfo::DEST_ZIP}"
   end
 
-  file GadmInfo::DEST_DB => GadmInfo::DEST_ZIP do
+  file GadmInfo::DEST_DB.to_s => GadmInfo::DEST_ZIP do |t|
     sh "unzip -d #{GadmInfo::DATA_DIR} -o #{GadmInfo::DEST_ZIP}"
+    touch t.name
   end
 
   desc "Download all the data"
