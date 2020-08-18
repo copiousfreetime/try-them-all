@@ -156,4 +156,4 @@ Okay - I think we have a winner. Lets use the Unsplash dataset and maybe mash it
 
 I'm extremely pleased with the Unsplash dataset so far. It looks great, good documentation, it really fun to play with and the team is open to feedback. I've already got a [pull request merged!](https://github.com/unsplash/datasets/pull/8).
 
-Stay tuned for many more posts to see what happens.
+Next post we'll do some cursory exploration of the [Unsplash dataset](https://unsplash.com/data).
