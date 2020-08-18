@@ -182,3 +182,14 @@ unsplash_lite=# select count(*) from unsplash_keywords where keyword != lower(ke
 
 Okay - that looks good.
 
+### Just do some fun queries
+
+So now lets just poke around a bit and see what looks interesting.
+
+* most common camera make / model
+* long exposures - star trails / time laps
+* small aperture - scenery
+* popular keywords
+*
+
+
