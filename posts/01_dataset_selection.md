@@ -1,6 +1,6 @@
 # Dataset Selection
 
-As I mentioned in my [previous post](https://dojo4.com/blog/try-them-all-introduction); in order to have some commonality between all the implementations I'll be doing, there needs to be common thread. For this project, that is going to be the same web application built around the same public dataset.
+As I mentioned in my [previous post](https://dojo4.com/blog/try-them-all-introduction); in order to have some commonality between all the implementations I'll be doing, there needs to be a common thread. For this project, that is going to be the same web application built around the same public dataset.
 
 ## Criteria
 
@@ -8,7 +8,7 @@ As I mentioned in my [previous post](https://dojo4.com/blog/try-them-all-introdu
 
 * A non-trivial amount of data - to me this means - it needs to be beyond what would easily fit in RAM on a typical machine. Generally, just unwieldy without some thought and preparation.
 * Good documentation on the dataset's structure and format.
-* Multiple relations - if its just a single CSV file - not really worth it. There needs to have multiple record types and they need to be related in some manner.
+* Multiple relations - if it is just a single CSV file - not really worth it. There needs to have multiple record types and they need to be related in some manner.
 * Include some data that would be useful to hook in some full text search options.
 * Include some data that is geospatial so we can demonstrate PostGIS with maps / leaflet, or other geospatial tools.
 * Be **fun** data - that is people would be interested in looking at it.
