@@ -44,7 +44,7 @@ After the weekend I ended up with this list of datasets, and they are in no part
 * <https://ingeniumcanada.org>
 * <https://ingeniumcanada.org/collection-research/artifact-open-data-set-mash-up>
 
-This looks pretty interesting - its a list of all the museum artifacts contained within the [Ingenium Museums](https://ingeniumcanada.org/).
+This looks pretty interesting - it is a list of all the museum artifacts contained within the [Ingenium Museums](https://ingeniumcanada.org/).
 
 * **Size** - about 100,000 records total records. This is on the lower end of my data volume requirements.
 * **Relations** - yes, some of the artifacts have sub parts, so there is are parent child relations, also keywords, countries, periods, etc. - all sorts of meta data that could be extracted out into their own dimensional elements.
@@ -65,7 +65,7 @@ An open music encyclopedia with music metadata and available to the public.
 * **Relations** - yup - the dataset is a PostgreSQL data dump.
 * **Full Text Search** - yes - artist, labels, song titles etc.
 * **Geospatial** - not that I can find
-* **Fun** - its music!
+* **Fun** - it is music!
 
 It is recommended that the MusicBrainz Server software be used to load the data. So this dataset appears to be tied pretty closely to existing software.
 
@@ -80,7 +80,7 @@ The dataset here is a complete dump of the Open Library collection. Their ultima
 * **Relations** - definitely - authors, works, editions, etc. the format is ultimately a JSON derivation, so somewhat self descriptive.
 * **Full Text Search** - why yes - titles, authors etc.
 * **Geospatial** - no :-(
-* **Fun** - its books!
+* **Fun** - it is books!
 
 One aspect of the Open Library dataset is the inclusion of all the deltas that have happened on the data. Versioned data and how to view/store it would be an additional topic to cover with this dataset. So far this looks to be a leading contender.
 
@@ -93,8 +93,8 @@ The GeoNames geographical database covers all countries and contains over eleven
 * **Size** - 11 million place names - so good enough
 * **Relations** - definitely - administrative areas, countries, regions, different geological features
 * **Full Text Search** - yes - place names, cities, etc.
-* **Geospatial** - yes - its a geopolitical database, lat/lon everywhere, and GeoJSON files are also available
-* **Fun** - its maps!
+* **Geospatial** - yes - it is a geopolitical database, lat/lon everywhere, and GeoJSON files are also available
+* **Fun** - it is maps!
 
 Lots of multilingual fields here for localized place names, could be useful for multilingual examples. There is also explicit hierarchical data and showing ways to store and view this type of data would be useful.
 
@@ -110,7 +110,7 @@ GADM provides maps and spatial data for all countries and their sub-divisions.
 * **Relations** - minimal - tree of administrative areas of all countries
 * **Full Text Search** - minimal - administrative area names
 * **Geospatial** - very much so - full geospatial data for multiple administrative zones on planet earth.
-* **Fun** - its maps!
+* **Fun** - it is maps!
 
 This is in a GeoPackage file which is a SpatiaLite container with some additional structure. So there will probably be some additional work to extract this data out into GeoJSON format. Mostly I think this dataset would be good to integrate with the system and use in combination with geonames.
 
@@ -127,9 +127,9 @@ The online db of information related to films, television, videos, games, stream
 * **Relations** - yup - titles, crew on films, episodes, etc.
 * **Full Text Search** - yes - pretty much everything could be put in search.
 * **Geospatial** - no - :-( - I was hoping for some shoot location information this time.
-* **Fun** - its movies!
+* **Fun** - it is movies!
 
-I've used IMDB in the past as a dataset for doing demonstrations, and its always fun to look at. Not really sure if I want to use it again.
+I've used IMDB in the past as a dataset for doing demonstrations, and it is always fun to look at. Not really sure if I want to use it again.
 
 ## Decision time
 
@@ -150,7 +150,7 @@ One of the worlds leading photography websites. Sharing stock photography.
 * **Relations** - yes - images, collections, downloads, keywords
 * **Full Text Search** - yes - image meta data, keywords, collection names
 * **Geospatial** - yes - images are tagged with lat/lon
-* **Fun** - its images!
+* **Fun** - it is images!
 
 Okay - I think we have a winner. Lets use the Unsplash dataset and maybe mash it up with geonames and/or GADM and see what comes out.
 
