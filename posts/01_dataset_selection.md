@@ -16,16 +16,16 @@ As I mentioned in my [previous post](https://dojo4.com/blog/try-them-all-introdu
 * Bonus if the dataset is updated regularly.
 * Appropriately Licensed - I want other to be able to replicate my work.
 
-Here's a few of the places I looked to look at lists of public datasets. There are lots of places people can go to look at lists of datasets:
+Here's a few of the dataset listing sites that I looked through:
 
 * [Kaggle](https://www.kaggle.com/)
 * [Google Dataset Search](https://datasetsearch.research.google.com/)
 * [Awesome Public Datasets](https://github.com/awesomedata/awesome-public-datasets)
 * [Registry of Open Data on AWS](https://registry.opendata.aws/)
 
-After spending a weekend delving through all of these lists and other various links on the Internet; I came up with a short list of things that look reasonable by eliminating a large swath of datasets for one or more of the following reasons:
+After spending a weekend delving through all of these lists and other various links on the Internet; I came up with a short list of things that look reasonable. Mostly this was achieved by eliminating a large swath of datasets for one or more of the following reasons:
 
-* **WAAAAYYY too little data** - A CSV with nothing but a few hundred, maybe a few thousand rows of data? Not near enough. I want to have to think about performance at some point.
+* **WAAAAYYY too little data** - A CSV with nothing but a few hundred, maybe a few thousand rows of data? Not near enough. I want to have to think about performance at some point. I was actually surprised by how many of the datasets listed were eliminated by this criteria.
 * **Lack of documentation** - If it was just a data file with no additional documentation - that is not useful. Context on how the data is collected or what the field types are is important to using it.
 * **Licensing** - This dataset is going to be for demonstrations of application development and whatever else I think might be fun. So it needs to be usable by others.
 * **Clearly not relational** - And I don't mean that it must be different tables, I mean that there needs to be multiple dimensions to the data, not just a row of numbers about a thing. The records need to be associated with other data that we can mashup with it.
@@ -46,7 +46,7 @@ After the weekend I ended up with this list of datasets, and they are in no part
 
 This looks pretty interesting - its a list of all the museum artifacts contained within the [Ingeninum Museums](https://ingeniumcanada.org/).
 
-* **Size** - about 100,000 records total records. This is on the lower end of the data volume requirements.
+* **Size** - about 100,000 records total records. This is on the lower end of my data volume requirements.
 * **Relations** - yes, some of the artifacts have sub parts, so there is are parent child relations, also keywords, countries, periods, etc. - all sorts of meta data that could be extracted out into their own dimensional elements.
 * **Full Text Search** - yup - plenty - lots of descriptions, keywords, etc.
 * **Geospatial** - sort of - there are country fields, that could be used to mashup with other datasets - specific lat/lon positions are not present.
@@ -112,7 +112,7 @@ GADM provides maps and spatial data for all countries and their sub-divisions.
 * **Geospatial** - very much so - full geospatial data for multiple administrative zones on planet earth.
 * **Fun** - its maps!
 
-This is in a GeoPackage file which is a SpatiaLite container with some additional structure. Mostly I think this dataset would be good to integrate with the system and use in combination with geonames.
+This is in a GeoPackage file which is a SpatiaLite container with some additional structure. So there will probably be some additional work to extract this data out into GeoJSON format. Mostly I think this dataset would be good to integrate with the system and use in combination with geonames.
 
 ### Internet Movie Database (IMDB)
 
@@ -133,13 +133,13 @@ I've used IMDB in the past as a dataset for doing demonstrations, and its always
 
 ## Decision time
 
-I had pretty much gone through all the datasets and was whittling down this last set. I had eliminated Music Brainz as too complicated to work with, and GeoNames and GADM were nice, but I didn't think either of them would be good as the primary focus of the project. I thought they would be good add ons to a primary dataset to enhance its geopatial components
+I had pretty much gone through all the datasets and was whittling down this last set. I had eliminated Music Brainz as too complicated to work with, and GeoNames and GADM were nice, but I didn't think either of them would be good as the primary focus of the project. I thought they would be good add ons to a primary dataset to enhance its geopatial components. IMDB I've worked with it in the past and wanted to try something new.
 
-So that left Ingenium vs. Open Library. I liked Ingenium from an interesting dataset perspective, but it was a learning towards the small end on data volumefor. Open Library has all the data, but had basically no geospatial data.
+That left Ingenium vs. Open Library. I liked Ingenium from an interesting dataset perspective, but it was a learning towards the small end on data volumefor. Open Library has all the data, but had basically no geospatial data.
 
 As I was sitting there pondering this decision, an email showed up from [Unsplash](https://unsplash.com/) - the announcement of [their dataset](https://unsplash.com/data). So I took a look: 
 
-## Unsplash Dataset 
+## Unsplash Dataset
 
 * <https://unsplash.com/data>
 
@@ -148,7 +148,7 @@ One of the worlds leading photography websites. Sharing stock photography.
 * **Size** - yup - Lite is 25,000 images, about 8 million records total. Full is 2,000,000 images about 200 million records total.
 * **Documentation** - yes - well documented
 * **Relations** - yes - images, collections, downloads, keywords
-* **Full Text Search** - yes - image meta data, keywords, etc.
+* **Full Text Search** - yes - image meta data, keywords, collection names
 * **Geospatial** - yes - images are tagged with lat/lon
 * **Fun** - its images!
 
