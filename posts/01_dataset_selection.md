@@ -82,7 +82,7 @@ The dataset here is a complete dump of the Open Library collection. Their ultima
 * **Geospatial** - no :-(
 * **Fun** - its books!
 
-One aspect of the Open Library dataset is the inclusion of all the deltas that have happened on the data. Versioned data and how to view/store it would be an additional topic to cover with this datset. So far this looks to be a leading contender.
+One aspect of the Open Library dataset is the inclusion of all the deltas that have happened on the data. Versioned data and how to view/store it would be an additional topic to cover with this dataset. So far this looks to be a leading contender.
 
 ### GeoNames
 
@@ -133,9 +133,9 @@ I've used IMDB in the past as a dataset for doing demonstrations, and its always
 
 ## Decision time
 
-I had pretty much gone through all the datasets and was whittling down this last set. I had eliminated Music Brainz as too complicated to work with, and GeoNames and GADM were nice, but I didn't think either of them would be good as the primary focus of the project. I thought they would be good add ons to a primary dataset to enhance its geopatial components. IMDB I've worked with it in the past and wanted to try something new.
+I had pretty much gone through all the datasets and was whittling down this last set. I had eliminated Music Brainz as too complicated to work with, and GeoNames and GADM were nice, but I didn't think either of them would be good as the primary focus of the project. I thought they would be good add-ons to a primary dataset to enhance its geospatial components. IMDB I've worked with it in the past and wanted to try something new.
 
-That left Ingenium vs. Open Library. I liked Ingenium from an interesting dataset perspective, but it was a learning towards the small end on data volumefor. Open Library has all the data, but had basically no geospatial data.
+That left Ingenium vs. Open Library. I liked Ingenium from an interesting dataset perspective, but it was a learning towards the small end on data volume. Open Library has all the data, but had basically no geospatial data.
 
 As I was sitting there pondering this decision, an email showed up from [Unsplash](https://unsplash.com/) - the announcement of [their dataset](https://unsplash.com/data). So I took a look: 
 
