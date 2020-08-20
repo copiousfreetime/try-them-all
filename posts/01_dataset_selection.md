@@ -39,12 +39,12 @@ That's a solid history of example databases, think [Northwind](https://github.co
 
 After the weekend I ended up with this list of datasets, and they are in no particular order. Well - it is an order, the order I put them in the spreadsheet I used to keep track of the interesting ones while searching.
 
-### Ingeinum Open Data Mashup
+### Ingenium Open Data Mashup
 
 * <https://ingeniumcanada.org>
 * <https://ingeniumcanada.org/collection-research/artifact-open-data-set-mash-up>
 
-This looks pretty interesting - its a list of all the museum artifacts contained within the [Ingeninum Museums](https://ingeniumcanada.org/).
+This looks pretty interesting - its a list of all the museum artifacts contained within the [Ingenium Museums](https://ingeniumcanada.org/).
 
 * **Size** - about 100,000 records total records. This is on the lower end of my data volume requirements.
 * **Relations** - yes, some of the artifacts have sub parts, so there is are parent child relations, also keywords, countries, periods, etc. - all sorts of meta data that could be extracted out into their own dimensional elements.
