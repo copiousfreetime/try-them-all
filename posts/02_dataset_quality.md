@@ -88,7 +88,7 @@ One of the first things I do when looking at a new set of data is check out the 
 
 You could also use a tool like [xsv](https://github.com/BurntSushi/xsv) to do an initial cardinality report. Something like `xsv stats --cardinality -d '\t' photos.tsv000  | xsv table` will work.
 
-We're going to go with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_phots.photo_featured` for example.
+I'm going to go with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_phots.photo_featured` for example.
 
 ```sql
 unslash_lite=# select photo_featured, count(*) from unsplash_photos group by 1;
@@ -98,19 +98,19 @@ unslash_lite=# select photo_featured, count(*) from unsplash_photos group by 1;
 (1 row) 
 ```
 
-As you can see here, this is a boolean column, and all the records in the lite dataset are true. When a column has a cardinality of 1, it is always [worth confirming](https://github.com/unsplash/datasets/issues/25) that this cardinality is correct. In this case [this is expected](https://github.com/unsplash/datasets/issues/25#issuecomment-677794892).
+This shows that the `unsplash_photos.photo_featured` field has the value`true` for every record in the dataset. A cardinality of 1. When a column has a cardinality of 1, it is always [worth confirming](https://github.com/unsplash/datasets/issues/25) that this cardinality is correct. In this case [this is expected](https://github.com/unsplash/datasets/issues/25#issuecomment-677794892).
 
   > It is expected that all the photos in the Lite dataset are featured photos. It won't be the case in the Full dataset
   > -- [@TimmyCarbone](https://github.com/unsplash/datasets/issues/25#issuecomment-677794892)
 
-The first version of the Unsplash dataset I downloaded was the initial release. When I did this check on the various `unsplash_photos.ai_primary_landmark_*` columns, it turned out all the values where `NULL`. [I asked about this](https://github.com/unsplash/datasets/issues/12). This one turned out to be a bug, was fixed, and a new release of the dataset was published.
+The first version of the Unsplash dataset I downloaded was the initial release. And when I did cardinality check on the various `unsplash_photos.ai_primary_landmark_*` columns, they all had a cardinality of 1, with the value `NULL`. [I asked about this](https://github.com/unsplash/datasets/issues/12). And it turned out to be a bug, was fixed, and a new release of the dataset was published.
 
-So always worth worth confirming. Initial clarifications can save hours, days, weeks, even months of person time to find, fix, and reprocess incorrect data assumptions.
+So always worth worth askign questions. Initial clarifications can save hours, days, weeks, even months of person time to find, fix, and reprocess incorrect data assumptions.
 
 
 ### Check for leading and trailing whitespace on text fields.
 
-If we look at the `unsplash_keywords` table - we see that there is a keywords column - I wonder what the shape of that is. If it from human entered data, in all probability its a bit messy. Are the keywords stripped of leading and trailing spaces?
+If we look at the `unsplash_keywords` table, we see a `keyword` column. If the values in this column are from human entered data, in all probability it will be a bit messy. For instance, do any of the keywords have leading or trailing spaces?
 
 ```text
 unsplash_lite=# select count(*) from unsplash_keywords where keyword like ' %';
@@ -154,7 +154,7 @@ Yup -- looks like there might be something to this -- [I asked Unsplash about it
   >
   > -- @TimmyCarbone
 
-That [issue is open](https://github.com/unsplash/datasets/issues/13) and there are a number of other text columns exhibiting the same characteristics as `unsplash_keywords.keyword`. Its being kept open for future reference.
+That [issue is open](https://github.com/unsplash/datasets/issues/13) and there are a number of other text columns exhibiting the same characteristics as `unsplash_keywords.keyword`. It is being kept open for future reference.
 
 ### How about if the keywords are normalized on case?
 
