@@ -37,3 +37,9 @@
 
 * no ORM direct to pg
 * full static?
+
+## Performance of the data
+
+* Adding indexes
+* Normalization
+* Snowflake the dataset
