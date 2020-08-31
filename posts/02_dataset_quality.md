@@ -31,7 +31,7 @@ This process is all derived from the documentation in the [Unsplash datasets git
 6. Create the postgresql db - this does assume you have a postgresql server up and running locally. You'll probably need to adjust the commandline as appropriate for your situation.
     `createdb -h localhost unsplash_lite`
 7. Create the tables.
-    ```sh
+    ```txt
     % psql -U jeremy  -d unsplash_lite -f create_tables.sql
     CREATE TABLE
     CREATE TABLE
@@ -39,8 +39,8 @@ This process is all derived from the documentation in the [Unsplash datasets git
     CREATE TABLE
     ```
 8. Edit the `load-data-client.sql` file to replace the `{path}` section to the full path to the unsplash scratch directory you are in.
-9. Load the data - the numbers output should 1 less than those  in the `wc -l` check from Step 4 above. That's because of header lines on all the files. This will probably take a few minutes.
-    ```sh
+9. Load the data - the numbers output should be 1 less than those  in the `wc -l` check from Step 4 above. That's because of header lines on all the files. This will probably take a few minutes.
+    ```txt
     % time psql -h localhost -U jeremy -d unsplash_lite -f load-data-client.sql
     COPY 25000
     COPY 2689739 # <-- Hmm.. this one is NOT 1 less than keywords.tsv000 above - will have to investigate
@@ -62,7 +62,7 @@ All of the following assume you are at the `psql` commandline. So connect up: `p
 
 According to the [dataset documentation](https://github.com/unsplash/datasets/blob/master/DOCS.md) the `photo_id` column on the `unsplash_photos.photo_id` field is the primary key of all the photos, and the `photo_id` column in the other tables should refer to the photos table. The [create_tables.sql](https://github.com/unsplash/datasets/blob/master/how-to/psql/create_tables.sql) does not create the referential constraint - or indexes on these columns. Lets add those. Doing so will confirm the documented referential integrity.
 
-```sql
+```txt
 unsplash_lite=# alter table unsplash_collections add foreign key (photo_id) references unsplash_photos(photo_id);
 ALTER TABLE
 unsplash_lite=# alter table unsplash_conversions add foreign key (photo_id) references unsplash_photos(photo_id);
@@ -75,7 +75,7 @@ No errors. Excellent, this confirms the documented referential integrity.
 
 Just to save our sanity while doing some exploring - lets go ahead and add indexes on those foreign key columns. No need to add one for `unsplash_collections` as it is part of the compound primary key.
 
-```sql
+```txt
 unsplash_lite=# create index on unsplash_conversions(photo_id);
 CREATE INDEX
 unsplash_lite=# create index on unsplash_keywords(photo_id);
@@ -88,9 +88,9 @@ One of the first things I do when looking at a new set of data is check out the 
 
 You could also use a tool like [xsv](https://github.com/BurntSushi/xsv) to do an initial cardinality report. Something like `xsv stats --cardinality -d '\t' photos.tsv000  | xsv table` will work.
 
-I'm going to go with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_phots.photo_featured` for example.
+I'm going with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_photos.photo_featured` for example.
 
-```sql
+```txt
 unslash_lite=# select photo_featured, count(*) from unsplash_photos group by 1;
  photo_featured | count
 ----------------+-------
@@ -103,9 +103,9 @@ This shows that the `unsplash_photos.photo_featured` field has the value`true` f
   > It is expected that all the photos in the Lite dataset are featured photos. It won't be the case in the Full dataset
   > -- [@TimmyCarbone](https://github.com/unsplash/datasets/issues/25#issuecomment-677794892)
 
-The first version of the Unsplash dataset I downloaded was the initial release. And when I did cardinality check on the various `unsplash_photos.ai_primary_landmark_*` columns, they all had a cardinality of 1, with the value `NULL`. [I asked about this](https://github.com/unsplash/datasets/issues/12). And it turned out to be a bug, was fixed, and a new release of the dataset was published.
+The first version of the Unsplash dataset I downloaded was the initial release. And when I did cardinality checks on the various `unsplash_photos.ai_primary_landmark_*` columns, they all had a cardinality of 1, with the value `NULL`. [I asked about this](https://github.com/unsplash/datasets/issues/12). And it turned out to be a bug, was fixed, and a new release of the dataset was published.
 
-So always worth worth askign questions. Initial clarifications can save hours, days, weeks, even months of person time to find, fix, and reprocess incorrect data assumptions.
+So always worth worth asking questions. Initial clarifications can save hours, days, weeks, even months of person time to find, fix, and reprocess incorrect data assumptions.
 
 
 ### Check for leading and trailing whitespace on text fields.
@@ -144,7 +144,7 @@ unsplash_lite=# select '>' || keyword || '<' as keyword, count(*) from unsplash_
  >wallpaper < |     5
 ```
 
-<em>That || operator is the SQL string concatenation operator, its used here to visually show us the padding.</em>
+<em>That || operator is the SQL string concatenation operator, its used here to visually show the padding.</em>
 
 Yup -- looks like there might be something to this -- [I asked Unsplash about it](https://github.com/unsplash/datasets/issues/13). There's a whole lot of text fields in the Unsplash data, and like I said, humans never enter data consistently. Turns out this is a known factor in this dataset and [they are are open to community input](https://github.com/unsplash/datasets/issues/13#issuecomment-672635482):
 
@@ -169,14 +169,14 @@ Okay - that looks good. Nothing to see here, move along.
 
 ### That 1 line difference on keywords from the import
 
-When looking at the original `keywords.tsv000` file it has 2,689,741 rows, which I assume to be 1 header row and 2,689,740 data rows. When imported, postgresql reported 2,689,739 rows. This does not match my assumption. Lets double check and figure this out.
+When looking at the original `keywords.tsv000` file, it has 2,689,741 rows, which I assumed to be 1 header row and 2,689,740 data rows. When imported, postgresql reported 2,689,739 rows. This does not match my assumption. Lets double check and figure this out.
 
 ```sh
 % wc -l keywords.tsv000
 2689741 keywords.tsv000
 ```
 
-```sql
+```txt
 unsplash_lite=# select count(*) from unsplash_keywords ;
   count
 ---------
@@ -184,7 +184,7 @@ unsplash_lite=# select count(*) from unsplash_keywords ;
 (1 row)
 ```
 
-Still a row off, maybe there's an extra newline in the tsv?
+Still a row off, maybe there's an extra newline in `keywords.tsv000`?
 ```
 % tail -2 keywords.tsv000
 --2IBUMom1I     people  62.514862060546903              f
@@ -273,7 +273,7 @@ data lines      : 2689740
 unique row count: 2689740
 ```
 
-Looks like there is the row count that `wc -l` reported, but ther are 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `[PF4s20KB678](`. Lets dump those lines of the file.
+Looks like there is the row count that `wc -l` reported, but there are 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `PF4s20KB678`. Lets dump those lines of the file.
 
 ```txt
 % sed -n '1590610,1590613p' keywords.tsv000
