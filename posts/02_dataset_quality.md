@@ -1,8 +1,8 @@
 # Exploring the Data Quality of the Unsplash Dataset
 
-In the [previous article](https://dojo4.com/blog/try-them-all-dataset-selection) we decided to use the [Unsplash Dataset](https://unsplash.com/data) and enhance it with the data from [GeoNames](https://www.geonames.org/) and [GADM](https://gadm.org/).
+In the [previous article](https://dojo4.com/blog/try-them-all-dataset-selection) I decided to use the [Unsplash Dataset](https://unsplash.com/data) and enhance it with the data from [GeoNames](https://www.geonames.org/) and [GADM](https://gadm.org/).
 
-Today we're going to explore the data of the Unsplash dataset from a data quality perspective to make sure we process it correctly. We'll want to check things about the data that could catch us up when we use it, and things we'll need to be aware of when we knock it into the shape we want.
+Today I'm going to explore the data of the Unsplash dataset from a data quality perspective. I want to check things out about the data that could trip me down the road if I don't catch them now.
 
 ## Fetching and loading the Unsplash data
 
@@ -110,7 +110,7 @@ So always worth worth askign questions. Initial clarifications can save hours, d
 
 ### Check for leading and trailing whitespace on text fields.
 
-If we look at the `unsplash_keywords` table, we see a `keyword` column. If the values in this column are from human entered data, in all probability it will be a bit messy. For instance, do any of the keywords have leading or trailing spaces?
+Looking at the `unsplash_keywords` table, there is a `keyword` column. If the values in this column are from human entered data, in all probability it will be a bit messy. For instance, do any of the keywords have leading or trailing spaces?
 
 ```text
 unsplash_lite=# select count(*) from unsplash_keywords where keyword like ' %';
@@ -144,9 +144,9 @@ unsplash_lite=# select '>' || keyword || '<' as keyword, count(*) from unsplash_
  >wallpaper < |     5
 ```
 
-<em>That || operator is the SQL string concatenation operator, we're using it here to visually show us the padding.</em>
+<em>That || operator is the SQL string concatenation operator, its used here to visually show us the padding.</em>
 
-Yup -- looks like there might be something to this -- [I asked Unsplash about it](https://github.com/unsplash/datasets/issues/13). There's a whole lot of text fields in the Unsplash data, and like I said, humans, we never enter data consistently. Turns out this is a known factor in this dataset and [they are are open to community input](https://github.com/unsplash/datasets/issues/13#issuecomment-672635482):
+Yup -- looks like there might be something to this -- [I asked Unsplash about it](https://github.com/unsplash/datasets/issues/13). There's a whole lot of text fields in the Unsplash data, and like I said, humans never enter data consistently. Turns out this is a known factor in this dataset and [they are are open to community input](https://github.com/unsplash/datasets/issues/13#issuecomment-672635482):
 
   > I believe that having clean fields is important. We might and will probably get to normalizing the location fields at some point in the future, it's just not really planned yet. I'll keep you and everyone posted on this issue as soon as we have a plan to tackle it
   >
@@ -169,7 +169,7 @@ Okay - that looks good. Nothing to see here, move along.
 
 ### That 1 line difference on keywords from the import
 
-When we look at the original `keywords.tsv000` file it has 2,689,741 rows, which we assume to be 1 header row and 2,689,740 data rows. When we imported, postgresql reported 2,689,739 rows. This does not match our assumption. Lets double check and figure this out.
+When looking at the original `keywords.tsv000` file it has 2,689,741 rows, which I assume to be 1 header row and 2,689,740 data rows. When imported, postgresql reported 2,689,739 rows. This does not match my assumption. Lets double check and figure this out.
 
 ```sh
 % wc -l keywords.tsv000
@@ -204,7 +204,7 @@ CREATE TABLE unsplash_keywords (
 );
 ```
 
-How about we reimport this data file and see how it looks. We'll create a new table, that's just like the original one but without the primary key and then import the keywords tsv into it. The `\COPY` command here is adapted from [load-data-client.sql](https://github.com/unsplash/datasets/blob/master/how-to/psql/load-data-client.sql)
+How about reimporting this data file and see how it looks. Using a new table, that's just like the original one but without the primary key and then import the keywords tsv into it. The `\COPY` command here is adapted from [load-data-client.sql](https://github.com/unsplash/datasets/blob/master/how-to/psql/load-data-client.sql)
 
 ```txt
 unsplash_light# CREATE TABLE unsplash_keywords_raw ( photo_id varchar(11), keyword text, ai_service_1_confidence float, ai_service_2_confidence float, suggested_by_user boolean
@@ -213,7 +213,12 @@ unsplash_light# \COPY unsplash_keywords_raw FROM PROGRAM 'awk FNR-1 ./keywords.t
 COPY 2689739
 ```
 
-No joy, same as before. Well - looks like we need to [write a program](https://gist.github.com/copiousfreetime/ab23addcb3a6e5612a77d0724e5d52b9). What we want to do is go through the keywords file and make sure that all the records have the same number of fields, and that we have the right number for records and the right number of lines. Since my primary language is Ruby - I'll use it.
+No joy, same as before. Looks like its time to [write code](https://gist.github.com/copiousfreetime/ab23addcb3a6e5612a77d0724e5d52b9). The checks to do are:
+
+* make sure that all the records have the same number of fields
+* the number of records in the file matches that reported by `wc -l` and/or loaded by postgresl
+
+My primary programming language is Ruby - so I'll use it.
 
 ```ruby
 #!/usr/bin/env ruby
@@ -256,7 +261,7 @@ end
 
 ```
 
-And then we run it.
+And then run it.
 
 ```txt
 % ruby check-tsv.rb keywords.tsv000
@@ -268,7 +273,7 @@ data lines      : 2689740
 unique row count: 2689740
 ```
 
-Looks like we have a row count that we expect from `wc -l` but we have 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `[PF4s20KB678](`. Lets dump those lines of the file and see what we see.
+Looks like there is the row count that `wc -l` reported, but ther are 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `[PF4s20KB678](`. Lets dump those lines of the file.
 
 ```txt
 % sed -n '1590610,1590613p' keywords.tsv000
@@ -278,7 +283,7 @@ mount fuji"                     t
 PF4s20KB678     pier    22.6900939941406                f
 ```
 
-Yup - definitely an embedded newline. And here we encounter the difference between *record count* and *line count*. In this case our assumption that there was 1 line in the file per record was incorrect. One of the keywords has an embedded newline. Lets go check the database.
+Yup - definitely an embedded newline. And here is the difference between *record count* and *line count*. In this case my assumption that there was 1 line in the file per record was incorrect. One of the keywords has an embedded newline. Lets go check the database.
 
 ```sql
 unsplash_lite=# select * from unsplash_keywords where photo_id = 'PF4s20KB678' and keyword like '%fujisan%';
@@ -289,7 +294,7 @@ unsplash_lite=# select * from unsplash_keywords where photo_id = 'PF4s20KB678' a
 (1 row)
 ```
 
-Excellent! We were wrong! That's always a really good feeling. Looks like the import tool did the right thing and the data is consistent. We should probably [notify Unsplash](https://github.com/unsplash/datasets/issues/29) and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply, like we did in our ruby program, and in doing so process the data incorrectly.
+Excellent! Assumption wrong! That's always a really good feeling. Looks like the import tool did the right thing and the data is consistent. Lets [notify Unsplash](https://github.com/unsplash/datasets/issues/29) and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply, like I did, and in doing so process the data incorrectly.
 
 And the image in question is nice too :-)
 
@@ -303,7 +308,7 @@ And the image in question is nice too :-)
 
 ## Conclusions
 
-All in all - we get to be wrong, we found some bugs, and cleared up some assumptions on the data. In our future work we'll probably want to do the following:
+All in all - I got to be wrong, found some bugs, and cleared up some assumptions on the data. Now to remember the following things when processing the data later.
 
 * make sure to strip leading and trailing whitespace on text fields - and convert empty strings to nulls
 * possibly convert embedded newlines to spaces
@@ -312,6 +317,6 @@ All in all - we get to be wrong, we found some bugs, and cleared up some assumpt
 
 From a data quality perspective the Unsplash dataset is in pretty good shape, and they are quite receptive to feedback. I really appreciate Unsplash releasing this dataset and personally I want to help make it a fun and interesting data exploration.
 
-In the next post we'll look at the data and see what interesting things might be in there. [Hit me up](https://twitter.com/copiousfreetime) if you have any questions for me, or to look for in the dataset.
+In the next post I'll look at the data and see what interesting things might be in there. [Hit me up](https://twitter.com/copiousfreetime) if you have any questions for me, or to look for in the dataset.
 
 enjoy!
