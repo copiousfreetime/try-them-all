@@ -6,7 +6,7 @@ Today we're going to explore the data of the Unsplash dataset from a data qualit
 
 ## Fetching and loading the Unsplash data
 
-All the documentation for this is in the [Unsplash datasets github repository](https://github.com/unsplash/datasets).
+This process is all derived from the documentation in the [Unsplash datasets github repository](https://github.com/unsplash/datasets).
 
 1. Make a scratch directory.
     `mkdir unsplash && cd unsplash`
@@ -38,7 +38,7 @@ All the documentation for this is in the [Unsplash datasets github repository](h
     CREATE TABLE
     CREATE TABLE
     ```
-8. Edit the `load-data-client.sql` file to replace the `{path}` section to the full path to this unsplash scratch directory you are in.
+8. Edit the `load-data-client.sql` file to replace the `{path}` section to the full path to the unsplash scratch directory you are in.
 9. Load the data - the numbers output should 1 less than those  in the `wc -l` check from Step 4 above. That's because of header lines on all the files. This will probably take a few minutes.
     ```sh
     % time psql -h localhost -U jeremy -d unsplash_lite -f load-data-client.sql
@@ -54,9 +54,9 @@ All the documentation for this is in the [Unsplash datasets github repository](h
 
 ## Data Quality Checks
 
-All of the following assume you are at the `psql` commandline. So connect up: `psql -U jeremy -h localhost unplash_lite`
-
 It is always a good idea when you start looking at a dataset to do some cursory data quality checks and see if anything jumps out.
+
+All of the following assume you are at the `psql` commandline. So connect up: `psql -U jeremy -h localhost unplash_lite`
 
 ### Check Referential Integrity
 
@@ -71,7 +71,7 @@ unsplash_lite=# alter table unsplash_keywords add foreign key (photo_id) referen
 ALTER TABLE
 ```
 
-No errors. Excellent.
+No errors. Excellent, this confirms the documented referential integrity.
 
 Just to save our sanity while doing some exploring - lets go ahead and add indexes on those foreign key columns. No need to add one for `unsplash_collections` as it is part of the compound primary key.
 
@@ -91,7 +91,7 @@ You could also use a tool like [xsv](https://github.com/BurntSushi/xsv) to do an
 We're going to go with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_phots.photo_featured` for example.
 
 ```sql
-=# select photo_featured, count(*) from unsplash_photos group by 1;
+unslash_lite=# select photo_featured, count(*) from unsplash_photos group by 1;
  photo_featured | count
 ----------------+-------
  t              | 25000
@@ -154,6 +154,8 @@ Yup -- looks like there might be something to this -- [I asked Unsplash about it
   >
   > -- @TimmyCarbone
 
+That [issue is open](https://github.com/unsplash/datasets/issues/13) and there are a number of other text columns exhibiting the same characteristics as `unsplash_keywords.keyword`. Its being kept open for future reference.
+
 ### How about if the keywords are normalized on case?
 
 ```
@@ -163,11 +165,11 @@ unsplash_lite=# select count(*) from unsplash_keywords where keyword != lower(ke
      0
 ```
 
-Okay - that looks good.
+Okay - that looks good. Nothing to see here, move along.
 
-### That 1 line difference on keywords
+### That 1 line difference on keywords from the import
 
-When we look at the original `keywords.tsv000` file it 2,689,741 rows, which should be 1 header row and 2,689,740 data rows. When we imported, postgresql reported 2,689,739 rows. Lets double check.
+When we look at the original `keywords.tsv000` file it has 2,689,741 rows, which we assume to be 1 header row and 2,689,740 data rows. When we imported, postgresql reported 2,689,739 rows. This does not match our assumption. Lets double check and figure this out.
 
 ```sh
 % wc -l keywords.tsv000
@@ -182,7 +184,7 @@ unsplash_lite=# select count(*) from unsplash_keywords ;
 (1 row)
 ```
 
-Still a row off, maybe there's an extra newline on the tsv?
+Still a row off, maybe there's an extra newline in the tsv?
 ```
 % tail -2 keywords.tsv000
 --2IBUMom1I     people  62.514862060546903              f
@@ -202,9 +204,9 @@ CREATE TABLE unsplash_keywords (
 );
 ```
 
-How about we reimport this data file and see how it looks. We'll create a new table, that's just like the original one but without the primary key and then import the keywords tsv into it. The `\COPY` command there is adapted from [load-data-client.sql](https://github.com/unsplash/datasets/blob/master/how-to/psql/load-data-client.sql)
+How about we reimport this data file and see how it looks. We'll create a new table, that's just like the original one but without the primary key and then import the keywords tsv into it. The `\COPY` command here is adapted from [load-data-client.sql](https://github.com/unsplash/datasets/blob/master/how-to/psql/load-data-client.sql)
 
-```sql
+```txt
 unsplash_light# CREATE TABLE unsplash_keywords_raw ( photo_id varchar(11), keyword text, ai_service_1_confidence float, ai_service_2_confidence float, suggested_by_user boolean
 CREATE TABLE
 unsplash_light# \COPY unsplash_keywords_raw FROM PROGRAM 'awk FNR-1 ./keywords.tsv* | cat' WITH ( FORMAT csv, DELIMITER E'\t', HEADER false);
@@ -227,7 +229,6 @@ File.open(filename) do |f|
   line_number     += 1
   header_parts    = header.split("\t")
   puts "Headers: #{header_parts.join(" -- ")}"
-
 
   f.each_line do |line|
     line_number += 1
@@ -267,7 +268,7 @@ data lines      : 2689740
 unique row count: 2689740
 ```
 
-Looks like we have a row count that we expect from `wc -l` but we have 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `PF4s20KB678`. Lets dump those lines of the file and see what we see.
+Looks like we have a row count that we expect from `wc -l` but we have 2 rows, that are adjacent, with the wrong parts count. There is probably an embedded `\n` in the keyword field of photo `[PF4s20KB678](`. Lets dump those lines of the file and see what we see.
 
 ```txt
 % sed -n '1590610,1590613p' keywords.tsv000
@@ -288,9 +289,17 @@ unsplash_lite=# select * from unsplash_keywords where photo_id = 'PF4s20KB678' a
 (1 row)
 ```
 
-Excellent! We were wrong! That's always a really good feeling.
+Excellent! We were wrong! That's always a really good feeling. And the image in question is nice too :-)
 
-Looks like the import tool did the right thing and the data is consistent. We should probably [notify Unsplash though](https://github.com/unsplash/datasets/issues/29), and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply like we did in our ruby program and in doing so process the data incorrectly.
+<figure class="image">
+  <img src="https://images.unsplash.com/photo-1588693273928-92fa26159c88?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE1ODI1Mn0" alt="fujisan mount fuji image by Tunafish Mayonnaise on Unsplash">
+  <figcaption>
+    Photo by <a href='https://unsplash.com/@tunamayoonigiri?utm_source=Try+Them+All&utm_medium=referral'>Tunafish Mayonnaise</a>
+    on <a href="https://unsplash.com/?utm_source=Try+Them+all&utm_medium=referral">Unsplash</a>.
+  </figcaption>
+</figure>
+
+Looks like the import tool did the right thing and the data is consistent. We should probably [notify Unsplash though](https://github.com/unsplash/datasets/issues/29), and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply, like we did in our ruby program, and in doing so process the data incorrectly.
 
 ## Conclusions
 
@@ -301,8 +310,8 @@ All in all - we get to be wrong, we found some bugs, and cleared up some assumpt
 * normalize case where appropriate
 * expect nulls in fields
 
-From a data quality perspective the Unsplash dataset is in quite a bit better shape than many I have dealt with, and they are quite receptive to feedback. I really appreciate Unsplash releasing this dataset and personally I want to help make it a fun and interesting data exploration.
+From a data quality perspective the Unsplash dataset is in pretty good shape, and they are quite receptive to feedback. I really appreciate Unsplash releasing this dataset and personally I want to help make it a fun and interesting data exploration.
 
-In the next post we'll look at the data and see what interesting things might be in there. [Hit me up if you have any questions for me, or the dataset](https://twitter.com/copiousfreetime).
+In the next post we'll look at the data and see what interesting things might be in there. [Hit me up](https://twitter.com/copiousfreetime) if you have any questions for me, or to look for in the dataset.
 
 enjoy!
