@@ -289,7 +289,9 @@ unsplash_lite=# select * from unsplash_keywords where photo_id = 'PF4s20KB678' a
 (1 row)
 ```
 
-Excellent! We were wrong! That's always a really good feeling. And the image in question is nice too :-)
+Excellent! We were wrong! That's always a really good feeling. Looks like the import tool did the right thing and the data is consistent. We should probably [notify Unsplash though](https://github.com/unsplash/datasets/issues/29), and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply, like we did in our ruby program, and in doing so process the data incorrectly.
+
+And the image in question is nice too :-)
 
 <figure class="image">
   <img src="https://images.unsplash.com/photo-1588693273928-92fa26159c88?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE1ODI1Mn0" alt="fujisan mount fuji image by Tunafish Mayonnaise on Unsplash">
@@ -298,8 +300,6 @@ Excellent! We were wrong! That's always a really good feeling. And the image in 
     on <a href="https://unsplash.com/?utm_source=Try+Them+all&utm_medium=referral">Unsplash</a>.
   </figcaption>
 </figure>
-
-Looks like the import tool did the right thing and the data is consistent. We should probably [notify Unsplash though](https://github.com/unsplash/datasets/issues/29), and make sure that this is to be expected and documented appropriately. It is possible that other people using this dataset may parse it simply, like we did in our ruby program, and in doing so process the data incorrectly.
 
 ## Conclusions
 
