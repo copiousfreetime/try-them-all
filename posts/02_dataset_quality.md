@@ -88,7 +88,7 @@ CREATE INDEX
 
 One of the first things I do when looking at a new set of data is check out the cardinality of the columns. In other words, the list of distinct values in the column. This can show you potential errors or just undocumented assumptions in the dataset.
 
-You could also use a tool like [xsv](https://github.com/BurntSushi/xsv) to do an initial cardinality report. Something like `xsv stats --cardinality -d '\t' photos.tsv000  | xsv table` will work.
+You could use a tool like [xsv](https://github.com/BurntSushi/xsv) to do an initial cardinality report. `xsv stats --cardinality -d '\t' photos.tsv000  | xsv table` will work.
 
 I'm going with an SQL approach today. Doing a cardinality check is effectively doing a group count on all the values of a column. This query on `unsplash_photos.photo_featured` for example.
 
