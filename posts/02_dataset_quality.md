@@ -4,7 +4,7 @@ This is the 3rd in an open-ended series around implementing roughly the same app
 
 In the [previous article](https://dojo4.com/blog/try-them-all-dataset-selection) I decided on to use the [Unsplash Dataset](https://unsplash.com/data) as the basis for these implementations and enhance it with the data from [GeoNames](https://www.geonames.org/) and [GADM](https://gadm.org/).
 
-Today I'm going to explore the data of the Unsplash dataset from a data quality perspective. I want to check things out about the data that could trip me down the road if I don't catch them now.
+Today I'm going to explore the data of the Unsplash dataset from a data quality perspective. I want to check things out about the data that could trip me up down the road if I don't catch them now.
 
 ## Fetching and loading the Unsplash data
 
