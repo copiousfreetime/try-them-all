@@ -17,12 +17,14 @@ Given all of that, the objective is to write a client that:
 - hands that parsed object off to the next stage of the pipeline
 
 ### Connecting and Reading
+
 This is the intiial script to test out connecting and receiving data to make sure that works. It connects to the given tcp host and port, and reads 1 megabyte of data from the stream. The full scripts are available via the gist links, I'll just be showing the relavent parts line in this post.
 
 [connecting-client gist](https://gist.github.com/copiousfreetime/e6ea5c901270706271c763fd2fbd355e#file-01_connecting-client-rb)
 
 ```ruby
-# ...
+# .. see the full gist for the entire script
+#
 # Create the socket and make it non-blocking since this application is doing other things
 # too
 logger.info "Connecting to datasource"
@@ -60,13 +62,14 @@ Excellent, the connection works and bytes are received.
 
 ## Reading zlib compressed data
 
-Now the next bit is to make sure we can decompress the zlib stream. Some might think that this would just be passing it off to `gunzip`. That would be incorrect. This is an infinite stream of bytes from a socket. And although the gzip file format is compressed with the DEFLATE compression algorithm implemented by zlib, the gzip file format has a header and a footer. Headers and footers are not possible in a continuous stream, which has no beginning nor end.
+Now the next bit is to decompress the zlib stream. Some might think that this would just be passing it off to `gunzip`. That would be incorrect. This is an infinite stream of bytes from a socket. And although the gzip file format is compressed with the DEFLATE compression algorithm implemented by zlib, the gzip file format has a header and a footer. Headers and footers are not possible in a continuous stream, which has no beginning nor end.
 
-Luckily handling DEFLATE is built into the ruby standard library via `zlib`. What we need to do is for each of those buffers read from the socket to be decompressed. If we update the code around the loop we get the following:
+Luckily handling DEFLATE is built into the ruby standard library via `zlib`. For each of those buffers read from the socket, decompress it. Updating the code around the loop results in the following:
 
 [decompressing-client gist](https://gist.github.com/copiousfreetime/e6ea5c901270706271c763fd2fbd355e#file-02_decompressing-client-rb)
+
 ```ruby
-# .. see the full gist for the 
+# .. see the full gist for the entire script
 #
 compressed_buffer  = String.new # A resuable string for use by readpartial for compressed bytes
 inflater           = ::Zlib::Inflate.new(::Zlib::MAX_WBITS + 32)
@@ -93,9 +96,7 @@ logger.info "Received #{total_bytes} of compressed data"
 logger.info "Resulting in #{uncompressed_bytes} of decompressed data"
 ```
 
-Run the script and then check the output to see if this looks like reasonable JSON data.  One of the fields in the json is `t` which is a timestamp. Using `jq` to go through this line oriented json and extract out the `t` field it looks the data is received correctly.
-
-After running it and testing  - it looks good - except for the last line. This is to be expected as the bytes we're reading from the data are compressed bytes and the code decompresses it as blocks. The data is not line oriented yet.
+One of the fields in the JSON is `t` whose value is a timestamp. If I run the `output.json` through `jq` and extract out the `t`, and those look good, then its an indicator the processing is working correctly.
 
 ```
 $ ./decompressing_client.rb  $HOST $PORT output.json
@@ -112,11 +113,13 @@ $ jq .t < output.json  > /dev/null
 parse error: Unfinished string at EOF at line 2806, column 1431
 ```
 
-## Converting blocks of text to newlines
+After running it and testing  - it looks good - except for the last line, which is garbled JSON. This is to be expected as the bytes that are read from the data stream are compressed bytes and the code decompresses it as blocks. The data is not line oriented yet.
 
-Normally when reading from an IO object in ruby, to parse the input into newlines, I would just use `IO#readline` or `IO#gets`. In this case, the decompressed bytes are not in an `IO` object, they are a block of bytes, and there may or may-not be a newline in it depending on how much was read and decompressed from the socket.
+## Converting blocks of text to newlines with a pipe
 
-Originally I thought about writing something similar to a Java BufferedReader to convert the uncompressed bytestream into newlines. And then realized, It already exists in ruby -  [`IO.pipe`](https://rubyapi.org/2.7/o/io#method-c-pipe). 
+Normally when reading from an IO object in ruby, I would use `IO#readline` or `IO#gets` to parse the input into newlines. In this case, the decompressed bytes are not in an `IO` object, they are a block of bytes in a `String`, and there may or may-not be a newline in it depending on how much was read and decompressed from the socket.
+
+Originally I thought about writing something similar to a Java BufferedReader to convert the uncompressed bytestream into newlines. And then realized, it already exists in ruby -  [`IO.pipe`](https://rubyapi.org/2.7/o/io#method-c-pipe).
 
 > `IO.pipe` creates a pair of pipe endpoints (connected to each other) and returns them as a two-element array of [`IO`](https://rubyapi.org/2.7/o/io) objects: `[` _read\_io_, _write\_io_ `]`.
 
@@ -134,15 +137,18 @@ end
 
 ## Bringing it all together
 
-This changes the architecture of the program and moves it into a concurrent direction. We need
--  one thread to read the datastream from the socket, decompress it and send it down the pipe
--  another thread to read from the pipe as newlines and parse the json
+This changes the architecture of the program and moves it into a concurrent programming style. There needs to exist:
+
+- one thread to read the datastream from the socket, decompress it and send it down the IO pipe
+- another thread to read from the pipe as newlines and parse the json
 - a third to process the parsed json.
 
 [json-parsing-client gist](https://gist.github.com/copiousfreetime/e6ea5c901270706271c763fd2fbd355e#file-03_json-parsing-client-rb)
 
-Extract out the reading from the socket and decompressing  to a class that will be put in its own thread.
+First - extract out the reading from the socket and decompressing to a class that will be put in its own thread.
+
 ```ruby
+# .. see the full gist for the entire script
 #
 # class to read data from an input IO, decompress the data, and write it to an
 # output IO. it'll collect stats during the process
@@ -184,9 +190,10 @@ class Decompressor
 end
 ```
 
-Put the reading of the decompressed data into lines and parsing into json into its own class
+Next - Extract the reading of the decompressed data into lines and parsing into json into its own class. This will also be put into a thread.
 
 ```ruby
+# .. see the full gist for the entire script
 #
 # class to read newlines from an input and write the output parsed object something
 # else that responds to `<<`
@@ -220,9 +227,10 @@ class Parser
 end
 ```
 
-And tie all of this up using `IO.pipe` and a `Queue` so the parser can shovel off the events to something else.
+And finally tie all if it together using `IO.pipe` and a `Queue` so the parser can shovel off the events to something else.
 
 ```ruby
+# .. see the full gist for the entire script
 # Create the socket and make it non-blocking since this application is doing other things
 # too
 socket = ::Socket.tcp(host, port)
