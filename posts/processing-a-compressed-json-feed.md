@@ -4,21 +4,21 @@ Recently I had a technical problem to solve for a dojo4 client. They receive a r
 
 The datastream protocol is pretty simple:
 
-1. Open up a tcp connect to a desginated tcp `host:port`.
-2. Recieve a stream of zlib compressed newline delimited json events forever.
+1. Open up a tcp connect to a designated tcp `host:port`.
+2. Receive a stream of zlib compressed newline delimited json events forever.
 
 There is no protocol authentication, the app I'm working on is assigned a specific `host:port` by the data provider to connect to, and I have told the provider what IP address the application is coming from. That's it. 
 
 Given all of that, the objective is to write a client that:
 - connects to the socket
-- continutally reads data from the socket
+- continually reads data from the socket
 - decompresses that data to a stream of newline delimited JSON
 - parses that JSON
 - hands that parsed object off to the next stage of the pipeline
 
 ### Connecting and Reading
 
-This is the intiial script to test out connecting and receiving data to make sure that works. It connects to the given tcp host and port, and reads 1 megabyte of data from the stream. The full scripts are available via the gist links, I'll just be showing the relavent parts line in this post.
+This is the initial script to test out connecting and receiving data to make sure that works. It connects to the given tcp host and port, and reads 1 megabyte of data from the stream. The full scripts are available via the gist links, I'll just be showing the relevant parts line in this post.
 
 [connecting-client gist](https://gist.github.com/copiousfreetime/e6ea5c901270706271c763fd2fbd355e#file-01_connecting-client-rb)
 
@@ -123,7 +123,7 @@ Originally I thought about writing something similar to a Java BufferedReader to
 
 > `IO.pipe` creates a pair of pipe endpoints (connected to each other) and returns them as a two-element array of [`IO`](https://rubyapi.org/2.7/o/io) objects: `[` _read\_io_, _write\_io_ `]`.
 
-If the decompressed bytes are written to one end of the pipe, then lines may be read from the other end of the pipe, since it is an `IO` object and has both the `gets` and `readline` methods.  In short something like this:
+If the decompressed bytes are written to one end of the pipe, then lines may be read from the other end of the pipe. Since the read end of the pipe is an `IO` object and has both `gets` and `readline` methods.  In short something like this:
 
 ```ruby
 read_io, write_io = IO.pipe
@@ -261,13 +261,13 @@ consumer_thread = Thread.new {
 }
 ```
 
-You may be wondering about the line `write_io.set_encoding("BINARY")`. This particular item took a while to figure out. The data that is coming out of the decompressor are raw bytes. Those bytes need to be interpreted as UTF-8 characters since JSON requires UTF-8. There are multi-byte UTF-8 characters and it is pretty much guaranteed that at some point a multibyte UTF-8 character is going to be split across decompression chunks.
+You may be wondering about the line `write_io.set_encoding("BINARY")`. This particular item took a while to figure out. The data that is coming out of the decompressor are raw bytes. Those bytes need to be interpreted as UTF-8 characters since JSON requires UTF-8. It is pretty much guaranteed that at some point a multibyte UTF-8 character is going to be split across decompression chunks.
 
 By default the pipe ends up with a default encoding of UTF-8 on both input and output. When the decompressor writes uncompressed bytes to the pipe, if there is a partial multibyte UTF-8 character in that write operation, then ruby will raise an exception since the byte sequence is not a valid UTF-8 sequence.
 
-With the write side of the pipe having a `BINARY` encoding set, the pipe is now effectively a buffer that converts unencoding bytes to a line oriented UTF-8 characters.
+Doing `write_io.setn_encoding("BINARY")` the write side of the pipe now has a `BINARY` encoding set, the pipe is now effectively a buffer that converts unencoded bytes to a line oriented UTF-8 characters.
 
-Runing this new script results in:
+Running this new script results in:
 ```
 $ ./json_parsing_client.rb  $HOST $PORT
 2021-02-01T20:19:24Z 10004  INFO : Decompressor: read 245 times
@@ -278,4 +278,5 @@ $ ./json_parsing_client.rb  $HOST $PORT
 2021-02-01T20:19:24Z 10004  INFO : Consumer    : threw away 2581 events
 ```
 
+And now I have a proof-of-concept, compressed JSON stream client that I can flesh out to use in the application.
 
